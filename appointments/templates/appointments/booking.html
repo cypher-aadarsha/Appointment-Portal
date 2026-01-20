@@ -1,0 +1,256 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Book Appointment{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 40px 20px;">
+    <h2 class="section-title text-center" style="margin-bottom: 40px; color: var(--primary-blue);">
+        Schedule an Appointment
+    </h2>
+
+    <div class="booking-grid" style="display: grid; grid-template-columns: 1fr 2fr; gap: 40px;">
+        <!-- Minister Selection & Info -->
+        <aside class="glass-card">
+            <h3 style="margin-bottom: 20px;">Select Ministry</h3>
+            <div class="form-group">
+                <label for="minister-select" style="display: block; margin-bottom: 8px; font-weight: 500;">Minister /
+                    Department</label>
+                <select id="minister-select" class="glass-input"
+                    style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; background: rgba(255,255,255,0.9);">
+                    <option value="" disabled selected>-- Choose a Minister --</option>
+                    {% for minister in ministers %}
+                    <option value="{{ minister.id }}"
+                        data-img="{% if minister.photo %}{{ minister.photo.url }}{% endif %}"
+                        data-desc="{{ minister.description }}">
+                        {{ minister.name }} ({{ minister.portfolio }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="minister-info" class="hidden" style="margin-top: 30px; text-align: center;">
+                <div class="minister-photo"
+                    style="width: 120px; height: 120px; border-radius: 50%; background: #eee; margin: 0 auto 15px; overflow: hidden;">
+                    <img id="minister-img" src="" alt="Minister" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <h4 id="minister-name" style="color: var(--primary-blue);"></h4>
+                <p id="minister-desc" style="font-size: 0.9rem; color: var(--text-muted);"></p>
+            </div>
+        </aside>
+
+        <!-- Calendar & Slots -->
+        <div class="booking-main glass-card">
+            <!-- Calendar Header -->
+            <div class="calendar-header"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <button id="prev-month" class="btn-icon">&lt;</button>
+                <div class="month-display text-center">
+                    <h3 id="current-month-bs" style="color: var(--primary-red);">Magh 2082</h3>
+                    <span id="current-month-ad" style="font-size: 0.9rem; color: var(--text-muted);">January / February
+                        2026</span>
+                </div>
+                <button id="next-month" class="btn-icon">&gt;</button>
+            </div>
+
+            <!-- Calendar Grid -->
+            <div class="calendar-grid" id="calendar-grid">
+                <!-- Weekdays Header -->
+                <div class="weekday">Sun</div>
+                <div class="weekday">Mon</div>
+                <div class="weekday">Tue</div>
+                <div class="weekday">Wed</div>
+                <div class="weekday">Thu</div>
+                <div class="weekday">Fri</div>
+                <div class="weekday">Sat</div>
+                <!-- Days will be injected by JS -->
+            </div>
+
+            <!-- Slot Selection -->
+            <div id="slot-container" class="hidden"
+                style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                <h4>Available Slots for <span id="selected-date-display" style="color: var(--primary-red);"></span></h4>
+                <div id="slots-list" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+                    <!-- Slots injected by JS -->
+                    <p class="text-muted">Select a minister and date to view slots.</p>
+                </div>
+            </div>
+
+            <!-- Booking Form -->
+            <div id="booking-form-container" class="hidden"
+                style="margin-top: 30px; background: rgba(0,0,0,0.02); padding: 20px; border-radius: 8px;">
+                <h4 style="margin-bottom: 20px; color: var(--primary-blue);">Confirm Appointment</h4>
+                <form id="booking-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="slot_id" id="selected-slot-id">
+
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="display:block; margin-bottom:5px; font-weight:500;">Full Name</label>
+                        <input type="text" name="full_name" required class="glass-input" placeholder="e.g. Ram Sharma">
+                    </div>
+
+                    <div class="form-grid"
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:5px; font-weight:500;">Phone Number</label>
+                            <input type="tel" name="phone_number" required class="glass-input" placeholder="98XXXXXXXX">
+                        </div>
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:5px; font-weight:500;">Email Address</label>
+                            <input type="email" name="email" required class="glass-input"
+                                placeholder="example@email.com">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display:block; margin-bottom:5px; font-weight:500;">Purpose of Visit</label>
+                        <textarea name="purpose" required class="glass-input" rows="3"
+                            placeholder="Briefly describe why you want to meet..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary"
+                        style="width: 100%; padding: 12px; font-size: 1.1rem;">
+                        Confirm Booking Request
+                    </button>
+                    <p id="form-error" style="color: red; margin-top: 10px; display: none;"></p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div id="success-modal" class="modal-overlay hidden">
+    <div class="glass-card modal-content" style="text-align: center; max-width: 400px; margin: 0 auto;">
+        <div
+            style="width: 60px; height: 60px; background: #d1fae5; color: #059669; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 30px;">
+            <i class="fas fa-check"></i>
+        </div>
+        <h3 style="color: var(--primary-blue); margin-bottom: 10px;">Request Submitted!</h3>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">
+            Your appointment request has been sent to the Ministry Secretariat. You will be notified once verified.
+        </p>
+        <button onclick="window.location.reload()" class="btn btn-primary">Done</button>
+    </div>
+</div>
+
+<style>
+    /* ... existing styles ... */
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 8px;
+        text-align: center;
+    }
+
+    .weekday {
+        font-weight: 600;
+        color: var(--primary-blue);
+        padding: 8px 0;
+    }
+
+    .day-cell {
+        padding: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+    }
+
+    .day-cell:hover:not(.empty) {
+        background: rgba(220, 20, 60, 0.1);
+    }
+
+    .day-cell.selected {
+        background: var(--primary-red);
+        color: white;
+    }
+
+    .day-cell .bs-date {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .day-cell .ad-date {
+        font-size: 0.75rem;
+        opacity: 0.7;
+    }
+
+    .glass-input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-family: inherit;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    .slot-item {
+        padding: 8px 16px;
+        border: 1px solid var(--primary-blue);
+        border-radius: 20px;
+        cursor: pointer;
+        color: var(--primary-blue);
+    }
+
+    .slot-item.selected {
+        background: var(--primary-blue);
+        color: white;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'core/js/calendar.js' %}"></script>
+<script>
+    const bookingForm = document.getElementById('booking-form');
+    bookingForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errorMsg = document.getElementById('form-error');
+        errorMsg.style.display = 'none';
+
+        const formData = new FormData(bookingForm);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch("{% url 'appointments:create_appointment' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                document.getElementById('success-modal').classList.remove('hidden');
+            } else {
+                errorMsg.textContent = result.error || 'Submission failed.';
+                errorMsg.style.display = 'block';
+            }
+        } catch (err) {
+            errorMsg.textContent = 'Network error. Please try again.';
+            errorMsg.style.display = 'block';
+        }
+    });
+</script>
+{% endblock %}

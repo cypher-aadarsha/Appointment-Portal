@@ -1,0 +1,149 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Secretariat Dashboard{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 40px 20px;">
+    <div class="dashboard-header"
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h2 style="color: var(--primary-blue);">Secretariat Dashboard</h2>
+        <div class="stats-cards" style="display: flex; gap: 20px;">
+            <a href="?status=PENDING" class="stat-card {% if current_filter == 'PENDING' %}active{% endif %}"
+                style="background: white; padding: 15px 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-decoration: none; color: inherit;">
+                <span style="display: block; font-size: 0.8rem; color: #666;">Pending</span>
+                <strong style="font-size: 1.5rem; color: #f59e0b;">{{ counts.pending }}</strong>
+            </a>
+            <a href="?status=APPROVED" class="stat-card {% if current_filter == 'APPROVED' %}active{% endif %}"
+                style="background: white; padding: 15px 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-decoration: none; color: inherit;">
+                <span style="display: block; font-size: 0.8rem; color: #666;">Approved</span>
+                <strong style="font-size: 1.5rem; color: #10b981;">{{ counts.approved }}</strong>
+            </a>
+            <a href="?status=REJECTED" class="stat-card {% if current_filter == 'REJECTED' %}active{% endif %}"
+                style="background: white; padding: 15px 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-decoration: none; color: inherit;">
+                <span style="display: block; font-size: 0.8rem; color: #666;">Rejected</span>
+                <strong style="font-size: 1.5rem; color: #ef4444;">{{ counts.rejected }}</strong>
+            </a>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid #eee; text-align: left;">
+                    <th style="padding: 15px;">Date & Time</th>
+                    <th style="padding: 15px;">Minister</th>
+                    <th style="padding: 15px;">Applicant</th>
+                    <th style="padding: 15px;">Purpose</th>
+                    <th style="padding: 15px;">Status</th>
+                    <th style="padding: 15px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in appointments %}
+                <tr style="border-bottom: 1px solid #f0f0f0;">
+                    <td style="padding: 15px;">
+                        <div style="font-weight: 600;">{{ appointment.slot.date }}</div>
+                        <div style="font-size: 0.85rem; color: #666;">
+                            {{ appointment.slot.start_time|time:"g:i a" }} - {{ appointment.slot.end_time|time:"g:i a"
+                            }}
+                        </div>
+                    </td>
+                    <td style="padding: 15px;">
+                        {{ appointment.slot.minister.name }}
+                        <div style="font-size: 0.8rem; color: #666;">{{ appointment.slot.minister.portfolio }}</div>
+                    </td>
+                    <td style="padding: 15px;">
+                        <strong>{{ appointment.full_name }}</strong>
+                        <div style="font-size: 0.85rem; color: #666;">{{ appointment.phone_number }}</div>
+                    </td>
+                    <td style="padding: 15px; max-width: 250px;">{{ appointment.purpose }}</td>
+                    <td style="padding: 15px;">
+                        <span class="badge badge-{{ appointment.status|lower }}">{{ appointment.status }}</span>
+                    </td>
+                    <td style="padding: 15px;">
+                        {% if appointment.status == 'PENDING' %}
+                        <div style="display: flex; gap: 8px;">
+                            <form action="{% url 'dashboard:action' appointment.id %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit" class="btn-sm btn-approve" title="Approve"><i
+                                        class="fas fa-check"></i></button>
+                            </form>
+                            <form action="{% url 'dashboard:action' appointment.id %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="reject">
+                                <button type="submit" class="btn-sm btn-reject" title="Reject"><i
+                                        class="fas fa-times"></i></button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <span style="color: #ccc;">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="padding: 40px; text-align: center; color: #888;">No appointments found in
+                        this category.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .stat-card.active {
+        border: 2px solid var(--primary-blue);
+    }
+
+    .badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .badge-pending {
+        background: #fffbeb;
+        color: #d97706;
+    }
+
+    .badge-approved {
+        background: #d1fae5;
+        color: #059669;
+    }
+
+    .badge-rejected {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .btn-sm {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s;
+    }
+
+    .btn-sm:hover {
+        transform: scale(1.1);
+    }
+
+    .btn-approve {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-reject {
+        background: #ef4444;
+        color: white;
+    }
+</style>
+{% endblock %}

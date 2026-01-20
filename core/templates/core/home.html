@@ -1,0 +1,26 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container"
+        style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center;">
+        <div class="glass-card" style="max-width: 800px; padding: 4rem;">
+            <h1
+                style="font-size: 3.5rem; color: var(--primary-blue); margin-bottom: 1rem; font-family: var(--font-heading);">
+                Welcome to the Ministry Portal
+            </h1>
+            <p style="font-size: 1.25rem; color: var(--text-muted); margin-bottom: 2.5rem;">
+                Official Appointment Booking System for the Government of Nepal.
+                <br>Connect with ministers efficiently and transparently.
+            </p>
+
+            <a href="{% url 'appointments:book_appointment' %}" class="btn btn-primary"
+                style="font-size: 1.2rem; padding: 16px 40px;">
+                <i class="fas fa-calendar-check" style="margin-right: 10px;"></i> Book an Appointment
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

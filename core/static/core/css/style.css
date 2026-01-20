@@ -1,0 +1,184 @@
+:root {
+    /* Nepal Govt Colors */
+    --primary-red: #DC143C; /* Crimson */
+    --primary-blue: #003893; /* Navy Blue */
+    --white: #ffffff;
+    --off-white: #f8f9fa;
+    --text-dark: #1f2937;
+    --text-muted: #6b7280;
+    
+    /* Glassmorphism Variables */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    
+    /* Fonts */
+    --font-heading: 'Mukta', sans-serif;
+    --font-body: 'Outfit', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: #f0f2f5;
+    color: var(--text-dark);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Dynamic Background */
+.background-decor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: radial-gradient(circle at 10% 20%, rgba(220, 20, 60, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 56, 147, 0.05) 0%, transparent 40%);
+}
+
+.background-decor::after {
+    content: '';
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(135deg, rgba(0, 56, 147, 0.1), rgba(220, 20, 60, 0.1));
+    filter: blur(80px);
+    border-radius: 50%;
+}
+
+/* Layout */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Navbar */
+.navbar {
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    gap: 12px;
+}
+
+.logo-img-placeholder img {
+    height: 50px;
+    width: auto;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.sub-title {
+    font-size: 0.85rem;
+    color: var(--primary-red);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.main-title {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    color: var(--primary-blue);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.nav-links {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+}
+
+.nav-item {
+    text-decoration: none;
+    color: var(--text-dark);
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-item:hover {
+    color: var(--primary-blue);
+}
+
+/* Components */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-blue), #002a70);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 56, 147, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 56, 147, 0.4);
+}
+
+/* Footer */
+.footer {
+    margin-top: auto;
+    padding: 24px 0;
+    text-align: center;
+    background: white;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.footer-links a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    margin: 0 8px;
+}
