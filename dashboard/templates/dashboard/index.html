@@ -44,8 +44,7 @@
                     <td style="padding: 15px;">
                         <div style="font-weight: 600;">{{ appointment.slot.date }}</div>
                         <div style="font-size: 0.85rem; color: #666;">
-                            {{ appointment.slot.start_time|time:"g:i a" }} - {{ appointment.slot.end_time|time:"g:i a"
-                            }}
+                            {{ appointment.slot.start_time|time:"g:i a" }} - {{ appointment.slot.end_time|time:"g:i a" }}
                         </div>
                     </td>
                     <td style="padding: 15px;">
@@ -59,22 +58,23 @@
                     <td style="padding: 15px; max-width: 250px;">{{ appointment.purpose }}</td>
                     <td style="padding: 15px;">
                         <span class="badge badge-{{ appointment.status|lower }}">{{ appointment.status }}</span>
+                        {% if appointment.admin_message %}
+                        <div style="font-size: 0.75rem; color: #666; margin-top: 5px; font-style: italic;">
+                            <i class="fas fa-comment-alt"></i> {{ appointment.admin_message }}
+                        </div>
+                        {% endif %}
                     </td>
                     <td style="padding: 15px;">
                         {% if appointment.status == 'PENDING' %}
                         <div style="display: flex; gap: 8px;">
-                            <form action="{% url 'dashboard:action' appointment.id %}" method="post">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="approve">
-                                <button type="submit" class="btn-sm btn-approve" title="Approve"><i
-                                        class="fas fa-check"></i></button>
-                            </form>
-                            <form action="{% url 'dashboard:action' appointment.id %}" method="post">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="reject">
-                                <button type="submit" class="btn-sm btn-reject" title="Reject"><i
-                                        class="fas fa-times"></i></button>
-                            </form>
+                            <button type="button" class="btn-sm btn-approve" title="Approve"
+                                onclick="openActionModal('{{ appointment.id }}', 'approve', '{{ appointment.full_name }}')">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn-sm btn-reject" title="Reject"
+                                onclick="openActionModal('{{ appointment.id }}', 'reject', '{{ appointment.full_name }}')">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
                         {% else %}
                         <span style="color: #ccc;">-</span>
@@ -91,6 +91,70 @@
         </table>
     </div>
 </div>
+
+<!-- Approval/Rejection Modal -->
+<div id="action-modal" class="modal-overlay hidden">
+    <div class="glass-card modal-content" style="max-width: 500px; width: 90%; margin: 0 auto;">
+        <h3 id="modal-title" style="color: var(--primary-blue); margin-bottom: 20px;">Take Action</h3>
+        <form id="action-form" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" id="modal-action-input">
+            
+            <p id="modal-desc" style="margin-bottom: 15px; color: #555;"></p>
+            
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label style="display:block; margin-bottom:5px; font-weight:500;">Remarks / Message to Applicant</label>
+                <textarea name="admin_message" class="glass-input" rows="3" placeholder="Enter instructions or reason..."></textarea>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="closeActionModal()" style="background: #ccc; color: #333; padding: 8px 16px; border-radius: 6px; border:none; cursor:pointer;">Cancel</button>
+                <button type="submit" id="modal-submit-btn" class="btn" style="padding: 8px 16px; border-radius: 6px; border:none; cursor:pointer; color: white;">Confirm</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openActionModal(id, action, name) {
+        const modal = document.getElementById('action-modal');
+        const form = document.getElementById('action-form');
+        const title = document.getElementById('modal-title');
+        const desc = document.getElementById('modal-desc');
+        const submitBtn = document.getElementById('modal-submit-btn');
+        const actionInput = document.getElementById('modal-action-input');
+        
+        // Assuming url pattern is /dashboard/action/<id>/
+        form.action = `/dashboard/action/${id}/`;
+        
+        actionInput.value = action;
+        
+        if (action === 'approve') {
+            title.textContent = 'Approve Appointment';
+            title.style.color = '#10b981';
+            desc.innerHTML = `Are you sure you want to <strong>APPROVE</strong> the appointment for <strong>${name}</strong>?`;
+            submitBtn.textContent = 'Approve & Notify';
+            submitBtn.style.background = '#10b981';
+        } else {
+            title.textContent = 'Reject Appointment';
+            title.style.color = '#ef4444';
+            desc.innerHTML = `Are you sure you want to <strong>REJECT</strong> the appointment for <strong>${name}</strong>?`;
+            submitBtn.textContent = 'Reject';
+            submitBtn.style.background = '#ef4444';
+        }
+        
+        modal.classList.remove('hidden');
+    }
+    
+    function closeActionModal() {
+        document.getElementById('action-modal').classList.add('hidden');
+    }
+    
+    // Close on click outside
+    document.getElementById('action-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeActionModal();
+    });
+</script>
 
 <style>
     .stat-card.active {
@@ -144,6 +208,33 @@
     .btn-reject {
         background: #ef4444;
         color: white;
+    }
+
+    .glass-input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-family: inherit;
+        background: rgba(255, 255, 255, 0.5);
+    }
+    
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+    }
+    
+    .hidden {
+        display: none !important;
     }
 </style>
 {% endblock %}

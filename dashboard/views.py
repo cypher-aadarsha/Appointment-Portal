@@ -27,7 +27,10 @@ def dashboard_home(request):
 def appointment_action(request, appointment_id):
     if request.method == 'POST':
         action = request.POST.get('action')
+        admin_message = request.POST.get('admin_message', '')
         appointment = get_object_or_404(Appointment, id=appointment_id)
+        
+        appointment.admin_message = admin_message
         
         if action == 'approve':
             appointment.status = 'APPROVED'
