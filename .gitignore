@@ -23,3 +23,5 @@ db.sqlite3
 media/
 staticfiles/
 .DS_Store
+.env
+.idea/
