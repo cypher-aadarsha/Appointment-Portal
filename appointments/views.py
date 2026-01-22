@@ -7,6 +7,8 @@ from django.views import View
 from .models import Minister, TimeSlot, Appointment
 from django.core.mail import send_mail
 import json
+from datetime import datetime
+from django.utils import timezone
 
 class PublicBookingView(TemplateView):
     template_name = 'appointments/booking.html'
@@ -43,19 +45,32 @@ class AppointmentCreateView(View):
                 status='PENDING'
             )
             
-            # Send Notification (Mock)
-            print(f"NEW APPOINTMENT: {full_name} for {slot.minister.name} on {slot.date}")
-            # send_mail(
-            #     'New Appointment Request',
-            #     f'New appointment request from {full_name}. Check dashboard.',
-            #     'system@portal.gov.np',
-            #     ['admin@portal.gov.np'],
-            #     fail_silently=True,
-            # )
+            # Send Notification
+            subject = f'Appointment Request Received - {appointment.id}'
+            message = f"""
+            Dear {full_name},
+
+            Your appointment request with {slot.minister.name} for {slot.date} at {slot.start_time} has been received.
+            
+            Current Status: PENDING
+            
+            You will receive another email once the request is processed.
+
+            Regards,
+            Ministry Secretariat
+            """
+            
+            send_mail(
+                subject,
+                message,
+                None, # Use DEFAULT_FROM_EMAIL
+                [data.get('email')],
+                fail_silently=True,
+            )
             
             return JsonResponse({
                 'success': True, 
-                'message': 'Appointment request submitted successfully!',
+                'message': 'Appointment request submitted successfully! check your email.',
                 'appointment_id': appointment.id
             })
             
@@ -70,21 +85,27 @@ def get_available_slots(request):
         return JsonResponse({'error': 'Missing parameters'}, status=400)
     
     try:
-        # Exclude slots that have PENDING or APPROVED appointments
-        # Actually logic: if is_booked is True, it's confirmed. 
-        # But we also want to block slots that have pending appointments to avoid double booking requests?
-        # For now, let's just stick to is_booked=False. 
-        # Optional: Check if appointment exists for slot using related_name
+        # Date Validation
+        request_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        today = timezone.now().date()
         
+        if request_date < today:
+            return JsonResponse({'error': 'Cannot book appointments for past dates'}, status=400)
+
         slots = TimeSlot.objects.filter(
             minister_id=minister_id,
             date=date_str,
             is_booked=False
         )
         
-        # Filter out slots that have a PENDING appointment attached (if we want to be strict)
+        # Filter out slots that have a PENDING appointment attached
         available_slots = []
         for slot in slots:
+            # Also filter time if date is today
+            if request_date == today:
+                 if slot.start_time <= timezone.now().time():
+                     continue
+
             if not hasattr(slot, 'appointment'):
                 available_slots.append(slot)
         
