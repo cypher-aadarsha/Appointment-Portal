@@ -47,6 +47,7 @@ class Appointment(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
     created_at = models.DateTimeField(auto_now_add=True)
     admin_notes = models.TextField(blank=True, help_text="Internal notes for approval/rejection")
+    admin_message = models.TextField(blank=True, default='', help_text="Message to the applicant from the secretariat")
 
     def __str__(self):
         return f"{self.full_name} - {self.slot}"
