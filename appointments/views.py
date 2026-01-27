@@ -18,7 +18,7 @@ class PublicBookingView(TemplateView):
         context['ministers'] = Minister.objects.filter(is_active=True)
         return context
 
-@method_decorator(csrf_exempt, name='dispatch') # For simplicity in this demo, though better to use CSRF token in JS
+# @method_decorator(csrf_exempt, name='dispatch') - Removed for security
 class AppointmentCreateView(View):
     def post(self, request, *args, **kwargs):
         try:
